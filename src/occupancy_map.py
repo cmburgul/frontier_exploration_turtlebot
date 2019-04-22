@@ -2,6 +2,9 @@ from nav_msgs.msg import OccupancyGrid
 from geometry_msgs.msg import PoseStamped
 from geometry_msgs.msg import Pose
 import numpy as np
+from visualization_msgs.msg import Marker
+from geometry_msgs.msg import Point
+import rospy
 
 
 def is_valid(i, j, w, h):
@@ -42,7 +45,6 @@ def print_grid_types(map_array):
 
     print (len(free_space_points))
     #print (free_space_points)
-
 
 def get_frontiers(width, height, map_array):
     # Seperating Frontiers from a free_space_points 
@@ -111,7 +113,7 @@ def get_frontiers(width, height, map_array):
             flag_top = True
             count  = count + 1
 
-        # left node
+        # left node (i-1, j)
         flag_left = False
         flag1 = False
         flag2 = False
@@ -134,7 +136,7 @@ def get_frontiers(width, height, map_array):
             flag_left = True
             count  = count + 1
 
-        # down node
+        # down node (i, j-1)
         flag_down = False
         flag1 = False
         flag2 = False
@@ -169,3 +171,46 @@ def get_frontiers(width, height, map_array):
     #print (frontier)
 
     return frontier
+
+def get_frontier_centroid(frontiers):
+    sumX = 0
+    sumY = 0
+    centroid = []
+
+    for point in frontiers:
+        sumX = sumX + point[0]
+        sumY = sumY + point[1]
+    centroid = [(sumX/len(frontiers)), (sumY/len(frontiers)) ]
+
+    return centroid
+
+def visualize_centroid(centroid, marker_pub):
+
+    # Create a variable fr Marker Message
+    marker = Marker()
+    point = Point()
+
+    # Fill the point message
+    point.x = centroid[0]
+    point.y = centroid[1]
+    point.z = 0
+
+    marker.header.frame_id = "/map"
+    marker.header.stamp = rospy.get_rostime
+    marker.type = marker.POINTS
+    marker.action = marker.ADD
+    marker.pose.orientation.w = 1
+    marker.points = point
+    t = rospy.Duration()
+    marker.lifetime = t
+    marker.scale.x = 0.4
+    marker.scale.y = 0.4
+    marker.scale.z = 0.4
+    marker.color.a = 1.0
+    marker.color.r = 1.0
+
+    marker_pub.publish(marker)
+
+
+
+    

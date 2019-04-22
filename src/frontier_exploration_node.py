@@ -9,6 +9,8 @@ from nav_msgs.msg import OccupancyGrid
 from std_msgs.msg import Header
 from nav_msgs.msg import MapMetaData
 from geometry_msgs.msg import PoseStamped
+from visualization_msgs.msg import Marker
+from geometry_msgs.msg import Point
 import numpy as np
 
 class Frontier_Exploration():
@@ -22,6 +24,9 @@ class Frontier_Exploration():
           
         # Create a variable for Twist Message
         self.twist_msg = Twist()
+
+        # Create a variable for publishing on a topic /visualization_marker
+        self.marker_pub = rospy.Publisher("/visualization_marker", Marker, queue_size = 10) 
 
         # Speed varaibles
         self.linear_speed = 5
@@ -80,13 +85,16 @@ class Frontier_Exploration():
         frontiers = []
         frontiers = get_frontiers(width, height, map_array)
 
+        # Find Centroid of frontiers
+        centroid = []
+        centroid = get_frontier_centroid(frontiers)
         
+        print ("Centroid : ",centroid)
 
-        # Save all the free cells coordinate in an array
-        # Check it's neighbors if one of the neighbor is unknown it is a frontier
-        # Save all the frontier coordinates in an array 
-        # Find a centroid of frontiers
-        # Giev frontier centroid coordinates as a goal location
+        # Visualize the centroid point on Rviz using markers
+        visualize_centroid(centroid, self.marker_pub)
+        
+        # Give the centroid to the move_base action client
 
 
     def startExploration(self):
